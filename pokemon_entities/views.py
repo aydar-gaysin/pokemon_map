@@ -40,7 +40,7 @@ def show_all_pokemons(request):
         add_pokemon(
             folium_map, pokemon_entity.latitude,
             pokemon_entity.longitude,
-            pokemon_entity.pokemon.photo.url
+            pokemon_entity.pokemon.photo.path
         )
 
     pokemons_model = Pokemon.objects.all()

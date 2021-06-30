@@ -6,7 +6,6 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import render
 from itertools import count
 
-
 MOSCOW_CENTER = [55.751244, 37.618423]
 DEFAULT_IMAGE_URL = (
     'https://vignette.wikia.nocookie.net/pokemon/images/6/6e/%21.png/revision'
@@ -55,28 +54,25 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    # pokemon_entity = PokemonEntity.objects.filter(id=int(pokemon_id))
-    # pokemons_model = Pokemon.objects.all()
-    # for pokemon in pokemons_model:
-    #     if pokemon.id == int(pokemon_id):
-    #         requested_pokemon = pokemon
-    #         break
-    # else:
-    #     return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
+    certain_pokemon = Pokemon.objects.get(id=int(pokemon_id))
+    certain_pokemon_data = {
+            'pokemon_id': certain_pokemon.id,
+            'img_url': certain_pokemon.photo.url,
+            'title_ru': certain_pokemon.title,
+        }
 
-    requested_pokemon = PokemonEntity.objects.filter(id=int(pokemon_id))
+    requested_pokemon = PokemonEntity.objects.filter(pokemon__id=int(pokemon_id))
     if requested_pokemon:
         folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-        for pokemon_entity in requested_pokemon:
+        for pokemon in requested_pokemon:
             add_pokemon(
-                folium_map, pokemon_entity.latitude,
-                pokemon_entity.longitude,
-                pokemon_entity.pokemon.photo.path
+                folium_map, pokemon.latitude,
+                pokemon.longitude,
+                pokemon.pokemon.photo.path
             )
     else:
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
 
-
     return render(request, 'pokemon.html', context={
-        'map': folium_map._repr_html_(), 'pokemon': pokemon
+        'map': folium_map._repr_html_(), 'pokemon': certain_pokemon_data
     })

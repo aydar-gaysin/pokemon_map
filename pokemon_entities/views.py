@@ -55,7 +55,21 @@ def show_all_pokemons(request):
 
 def show_pokemon(request, pokemon_id):
     certain_pokemon = Pokemon.objects.get(id=int(pokemon_id))
-    if certain_pokemon.previous_evolution:
+    if not certain_pokemon.next_evolutions.all():
+        certain_pokemon_data = {
+            'pokemon_id': certain_pokemon.id,
+            'img_url': certain_pokemon.photo.url,
+            'title_ru': certain_pokemon.title,
+            'title_en': certain_pokemon.title_en,
+            'title_jp': certain_pokemon.title_jp,
+            'description': certain_pokemon.description,
+            'previous_evolution': {
+                'title_ru': certain_pokemon.previous_evolution.title,
+                'pokemon_id': certain_pokemon.previous_evolution.id,
+                'img_url': certain_pokemon.previous_evolution.photo.url
+            }
+        }
+    elif certain_pokemon.previous_evolution:
         certain_pokemon_data = {
                 'pokemon_id': certain_pokemon.id,
                 'img_url': certain_pokemon.photo.url,
@@ -67,7 +81,12 @@ def show_pokemon(request, pokemon_id):
                     'title_ru': certain_pokemon.previous_evolution.title,
                     'pokemon_id': certain_pokemon.previous_evolution.id,
                     'img_url': certain_pokemon.previous_evolution.photo.url
-            }
+                },
+                'next_evolution': {
+                    'title_ru': certain_pokemon.next_evolutions.all().first().title,
+                    'pokemon_id': certain_pokemon.next_evolutions.all().first().id,
+                    'img_url': certain_pokemon.next_evolutions.all().first().photo.url
+                }
         }
     else:
         certain_pokemon_data = {
@@ -77,6 +96,11 @@ def show_pokemon(request, pokemon_id):
             'title_en': certain_pokemon.title_en,
             'title_jp': certain_pokemon.title_jp,
             'description': certain_pokemon.description,
+            'next_evolution': {
+                'title_ru': certain_pokemon.next_evolutions.all().first().title,
+                'pokemon_id': certain_pokemon.next_evolutions.all().first().id,
+                'img_url': certain_pokemon.next_evolutions.all().first().photo.url
+            }
         }
 
 

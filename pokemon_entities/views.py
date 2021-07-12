@@ -1,10 +1,8 @@
 import folium
-import json
 
 from pokemon_entities.models import Pokemon, PokemonEntity
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
-from itertools import count
 
 MOSCOW_CENTER = [55.751244, 37.618423]
 DEFAULT_IMAGE_URL = (
@@ -55,54 +53,42 @@ def show_all_pokemons(request):
 
 def show_pokemon(request, pokemon_id):
     certain_pokemon = Pokemon.objects.get(id=int(pokemon_id))
+    certain_pokemon_data = {
+        'pokemon_id': certain_pokemon.id,
+        'img_url': certain_pokemon.photo.url,
+        'title_ru': certain_pokemon.title,
+        'title_en': certain_pokemon.title_en,
+        'title_jp': certain_pokemon.title_jp,
+        'description': certain_pokemon.description
+    }
     if not certain_pokemon.next_evolutions.all():
-        certain_pokemon_data = {
-            'pokemon_id': certain_pokemon.id,
-            'img_url': certain_pokemon.photo.url,
-            'title_ru': certain_pokemon.title,
-            'title_en': certain_pokemon.title_en,
-            'title_jp': certain_pokemon.title_jp,
-            'description': certain_pokemon.description,
-            'previous_evolution': {
+        certain_pokemon_data.update(
+            {'previous_evolution': {
                 'title_ru': certain_pokemon.previous_evolution.title,
                 'pokemon_id': certain_pokemon.previous_evolution.id,
-                'img_url': certain_pokemon.previous_evolution.photo.url
+                'img_url': certain_pokemon.previous_evolution.photo.url}
             }
-        }
+        )
     elif certain_pokemon.previous_evolution:
-        certain_pokemon_data = {
-                'pokemon_id': certain_pokemon.id,
-                'img_url': certain_pokemon.photo.url,
-                'title_ru': certain_pokemon.title,
-                'title_en': certain_pokemon.title_en,
-                'title_jp': certain_pokemon.title_jp,
-                'description': certain_pokemon.description,
-                'previous_evolution': {
+        certain_pokemon_data.update(
+            {'previous_evolution': {
                     'title_ru': certain_pokemon.previous_evolution.title,
                     'pokemon_id': certain_pokemon.previous_evolution.id,
-                    'img_url': certain_pokemon.previous_evolution.photo.url
-                },
+                    'img_url': certain_pokemon.previous_evolution.photo.url},
                 'next_evolution': {
                     'title_ru': certain_pokemon.next_evolutions.all().first().title,
                     'pokemon_id': certain_pokemon.next_evolutions.all().first().id,
-                    'img_url': certain_pokemon.next_evolutions.all().first().photo.url
-                }
-        }
-    else:
-        certain_pokemon_data = {
-            'pokemon_id': certain_pokemon.id,
-            'img_url': certain_pokemon.photo.url,
-            'title_ru': certain_pokemon.title,
-            'title_en': certain_pokemon.title_en,
-            'title_jp': certain_pokemon.title_jp,
-            'description': certain_pokemon.description,
-            'next_evolution': {
-                'title_ru': certain_pokemon.next_evolutions.all().first().title,
-                'pokemon_id': certain_pokemon.next_evolutions.all().first().id,
-                'img_url': certain_pokemon.next_evolutions.all().first().photo.url
+                    'img_url': certain_pokemon.next_evolutions.all().first().photo.url}
             }
-        }
-
+        )
+    else:
+        certain_pokemon_data.update(
+            {'next_evolution': {
+                    'title_ru': certain_pokemon.next_evolutions.all().first().title,
+                    'pokemon_id': certain_pokemon.next_evolutions.all().first().id,
+                    'img_url': certain_pokemon.next_evolutions.all().first().photo.url}
+            }
+        )
 
     requested_pokemon = PokemonEntity.objects.filter(pokemon__id=int(pokemon_id))
     if requested_pokemon:

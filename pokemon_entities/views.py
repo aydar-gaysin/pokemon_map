@@ -52,47 +52,48 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    certain_pokemon = Pokemon.objects.get(id=int(pokemon_id))
-    certain_pokemon_data = {
-        'pokemon_id': certain_pokemon.id,
-        'img_url': certain_pokemon.photo.url,
-        'title_ru': certain_pokemon.title,
-        'title_en': certain_pokemon.title_en,
-        'title_jp': certain_pokemon.title_jp,
-        'description': certain_pokemon.description
+    pokemon_type = Pokemon.objects.get(id=int(pokemon_id))
+    pokemon_type_parameters = {
+        'pokemon_id': pokemon_type.id,
+        'img_url': pokemon_type.photo.url,
+        'title_ru': pokemon_type.title,
+        'title_en': pokemon_type.title_en,
+        'title_jp': pokemon_type.title_jp,
+        'description': pokemon_type.description
     }
-    if not certain_pokemon.next_evolutions.all():
-        certain_pokemon_data.update(
+    if not pokemon_type.next_evolutions.all():
+        pokemon_type_parameters.update(
             {'previous_evolution': {
-                'title_ru': certain_pokemon.previous_evolution.title,
-                'pokemon_id': certain_pokemon.previous_evolution.id,
-                'img_url': certain_pokemon.previous_evolution.photo.url}
+                'title_ru': pokemon_type.previous_evolution.title,
+                'pokemon_id': pokemon_type.previous_evolution.id,
+                'img_url': pokemon_type.previous_evolution.photo.url}
             }
         )
 
-    if not certain_pokemon.previous_evolution:
-        certain_pokemon_data.update(
+    if not pokemon_type.previous_evolution:
+        starter_pokemon = pokemon_type.next_evolutions.all().first()
+        pokemon_type_parameters.update(
             {'next_evolution': {
-                'title_ru': certain_pokemon.next_evolutions.all().first().title,
-                'pokemon_id': certain_pokemon.next_evolutions.all().first().id,
-                'img_url': certain_pokemon.next_evolutions.all().first().photo.url}
+                'title_ru': starter_pokemon.title,
+                'pokemon_id': starter_pokemon.id,
+                'img_url': starter_pokemon.photo.url}
             }
         )
 
-    if certain_pokemon.previous_evolution and certain_pokemon.next_evolutions.all():
-        certain_pokemon_data.update(
+    if pokemon_type.previous_evolution and pokemon_type.next_evolutions.all():
+        pokemon_type_parameters.update(
             {'previous_evolution': {
-                    'title_ru': certain_pokemon.previous_evolution.title,
-                    'pokemon_id': certain_pokemon.previous_evolution.id,
-                    'img_url': certain_pokemon.previous_evolution.photo.url},
+                    'title_ru': pokemon_type.previous_evolution.title,
+                    'pokemon_id': pokemon_type.previous_evolution.id,
+                    'img_url': pokemon_type.previous_evolution.photo.url},
                 'next_evolution': {
-                    'title_ru': certain_pokemon.next_evolutions.all().first().title,
-                    'pokemon_id': certain_pokemon.next_evolutions.all().first().id,
-                    'img_url': certain_pokemon.next_evolutions.all().first().photo.url}
+                    'title_ru': pokemon_type.next_evolutions.all().first().title,
+                    'pokemon_id': pokemon_type.next_evolutions.all().first().id,
+                    'img_url': pokemon_type.next_evolutions.all().first().photo.url}
             }
         )
 
-    requested_pokemon = certain_pokemon.pokemon_specie.all()
+    requested_pokemon = pokemon_type.pokemon_specie.all()
     if requested_pokemon:
         folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
         for pokemon in requested_pokemon:
@@ -105,5 +106,5 @@ def show_pokemon(request, pokemon_id):
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
 
     return render(request, 'pokemon.html', context={
-        'map': folium_map._repr_html_(), 'pokemon': certain_pokemon_data
+        'map': folium_map._repr_html_(), 'pokemon': pokemon_type_parameters
     })

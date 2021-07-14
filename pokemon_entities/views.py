@@ -69,21 +69,23 @@ def show_pokemon(request, pokemon_id):
                 'img_url': certain_pokemon.previous_evolution.photo.url}
             }
         )
-    elif certain_pokemon.previous_evolution:
+
+    if not certain_pokemon.previous_evolution:
+        certain_pokemon_data.update(
+            {'next_evolution': {
+                'title_ru': certain_pokemon.next_evolutions.all().first().title,
+                'pokemon_id': certain_pokemon.next_evolutions.all().first().id,
+                'img_url': certain_pokemon.next_evolutions.all().first().photo.url}
+            }
+        )
+
+    if certain_pokemon.previous_evolution and certain_pokemon.next_evolutions.all():
         certain_pokemon_data.update(
             {'previous_evolution': {
                     'title_ru': certain_pokemon.previous_evolution.title,
                     'pokemon_id': certain_pokemon.previous_evolution.id,
                     'img_url': certain_pokemon.previous_evolution.photo.url},
                 'next_evolution': {
-                    'title_ru': certain_pokemon.next_evolutions.all().first().title,
-                    'pokemon_id': certain_pokemon.next_evolutions.all().first().id,
-                    'img_url': certain_pokemon.next_evolutions.all().first().photo.url}
-            }
-        )
-    else:
-        certain_pokemon_data.update(
-            {'next_evolution': {
                     'title_ru': certain_pokemon.next_evolutions.all().first().title,
                     'pokemon_id': certain_pokemon.next_evolutions.all().first().id,
                     'img_url': certain_pokemon.next_evolutions.all().first().photo.url}

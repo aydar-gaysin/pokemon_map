@@ -1,6 +1,8 @@
 import folium
 
 from pokemon_entities.models import Pokemon, PokemonEntity
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
 
@@ -52,7 +54,10 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    pokemon_type = Pokemon.objects.get(id=int(pokemon_id))
+    try:
+        pokemon_type = Pokemon.objects.get(id=int(pokemon_id))
+    except Pokemon.DoesNotExist:
+        raise Http404('Pokemon does not exist')
     pokemon_type_parameters = {
         'pokemon_id': pokemon_type.id,
         'img_url': pokemon_type.photo.url,

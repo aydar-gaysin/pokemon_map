@@ -54,29 +54,29 @@ def show_all_pokemons(request):
 
 def show_pokemon(request, pokemon_id):
     try:
-        pokemon_type = Pokemon.objects.get(id=int(pokemon_id))
+        pokemon = Pokemon.objects.get(id=int(pokemon_id))
     except Pokemon.DoesNotExist:
         raise Http404('Pokemon does not exist')
-    pokemon_type_parameters = {
-        'pokemon_id': pokemon_type.id,
-        'img_url': pokemon_type.photo.url,
-        'title_ru': pokemon_type.title,
-        'title_en': pokemon_type.title_en,
-        'title_jp': pokemon_type.title_jp,
-        'description': pokemon_type.description
+    pokemon_parameters = {
+        'pokemon_id': pokemon.id,
+        'img_url': pokemon.photo.url,
+        'title_ru': pokemon.title,
+        'title_en': pokemon.title_en,
+        'title_jp': pokemon.title_jp,
+        'description': pokemon.description
     }
-    if not pokemon_type.next_evolutions.all():
-        pokemon_type_parameters.update(
+    if not pokemon.next_evolutions.all():
+        pokemon_parameters.update(
             {'previous_evolution': {
-                'title_ru': pokemon_type.previous_evolution.title,
-                'pokemon_id': pokemon_type.previous_evolution.id,
-                'img_url': pokemon_type.previous_evolution.photo.url}
+                'title_ru': pokemon.previous_evolution.title,
+                'pokemon_id': pokemon.previous_evolution.id,
+                'img_url': pokemon.previous_evolution.photo.url}
             }
         )
 
-    if not pokemon_type.previous_evolution:
-        starter_pokemon = pokemon_type.next_evolutions.all().first()
-        pokemon_type_parameters.update(
+    if not pokemon.previous_evolution:
+        starter_pokemon = pokemon.next_evolutions.all().first()
+        pokemon_parameters.update(
             {'next_evolution': {
                 'title_ru': starter_pokemon.title,
                 'pokemon_id': starter_pokemon.id,
@@ -84,31 +84,15 @@ def show_pokemon(request, pokemon_id):
             }
         )
 
-    if pokemon_type.previous_evolution and pokemon_type.next_evolutions.all():
-        pokemon_type_parameters.update(
-            {'previous_evolution': {
-                    'title_ru': pokemon_type.previous_evolution.title,
-                    'pokemon_id': pokemon_type.previous_evolution.id,
-                    'img_url': pokemon_type.previous_evolution.photo.url},
-                'next_evolution': {
-                    'title_ru': pokemon_type.next_evolutions.all().first().title,
-                    'pokemon_id': pokemon_type.next_evolutions.all().first().id,
-                    'img_url': pokemon_type.next_evolutions.all().first().photo.url}
-            }
+    entities = pokemon.pokemons.all()
+    folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
+    for entitiy in entities:
+        add_pokemon(
+            folium_map, entitiy.latitude,
+            entitiy.longitude,
+            entitiy.pokemon.photo.path
         )
 
-    requested_pokemons = pokemon_type.pokemons.all()
-    if requested_pokemons:
-        folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-        for pokemon in requested_pokemons:
-            add_pokemon(
-                folium_map, pokemon.latitude,
-                pokemon.longitude,
-                pokemon.pokemon.photo.path
-            )
-    else:
-        return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
-
     return render(request, 'pokemon.html', context={
-        'map': folium_map._repr_html_(), 'pokemon': pokemon_type_parameters
+        'map': folium_map._repr_html_(), 'pokemon': pokemon_parameters
     })

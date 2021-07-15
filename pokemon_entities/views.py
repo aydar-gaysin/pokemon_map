@@ -97,7 +97,7 @@ def show_pokemon(request, pokemon_id):
             }
         )
 
-    requested_pokemons = pokemon_type.pokemon_specie.all()
+    requested_pokemons = pokemon_type.pokemons.all()
     if requested_pokemons:
         folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
         for pokemon in requested_pokemons:
